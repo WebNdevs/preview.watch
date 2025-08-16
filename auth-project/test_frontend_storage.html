@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend Storage</title>
+</head>
+<body>
+    <h1>Test Frontend Storage Logic</h1>
+    
+    <div>
+        <h2>Current Storage State:</h2>
+        <div id="storageInfo"></div>
+    </div>
+    
+    <div>
+        <h2>Test Storage Operations:</h2>
+        <button onclick="testLocalStorage()">Test localStorage</button>
+        <button onclick="testSessionStorage()">Test sessionStorage</button>
+        <button onclick="testRememberMe()">Test Remember Me Logic</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+    </div>
+    
+    <div>
+        <h2>Test Results:</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        function updateStorageInfo() {
+            const storageInfo = document.getElementById('storageInfo');
+            const localStorageData = {
+                auth_token: localStorage.getItem('auth_token'),
+                user: localStorage.getItem('user'),
+                remember_me: localStorage.getItem('remember_me')
+            };
+            const sessionStorageData = {
+                auth_token: sessionStorage.getItem('auth_token'),
+                user: sessionStorage.getItem('user')
+            };
+            
+            storageInfo.innerHTML = `
+                <h3>localStorage:</h3>
+                <pre>${JSON.stringify(localStorageData, null, 2)}</pre>
+                <h3>sessionStorage:</h3>
+                <pre>${JSON.stringify(sessionStorageData, null, 2)}</pre>
+            `;
+        }
+        
+        function testLocalStorage() {
+            const results = document.getElementById('testResults');
+            try {
+                localStorage.setItem('auth_token', 'test_token_local');
+                localStorage.setItem('user', JSON.stringify({id: 1, email: 'test@local.com'}));
+                localStorage.setItem('remember_me', 'true');
+                results.innerHTML = '<p style="color: green;">✓ localStorage test successful</p>';
+                updateStorageInfo();
+            } catch (error) {
+                results.innerHTML = '<p style="color: red;">✗ localStorage test failed: ' + error.message + '</p>';
+            }
+        }
+        
+        function testSessionStorage() {
+            const results = document.getElementById('testResults');
+            try {
+                sessionStorage.setItem('auth_token', 'test_token_session');
+                sessionStorage.setItem('user', JSON.stringify({id: 1, email: 'test@session.com'}));
+                results.innerHTML = '<p style="color: green;">✓ sessionStorage test successful</p>';
+                updateStorageInfo();
+            } catch (error) {
+                results.innerHTML = '<p style="color: red;">✗ sessionStorage test failed: ' + error.message + '</p>';
+            }
+        }
+        
+        function testRememberMe() {
+            const results = document.getElementById('testResults');
+            try {
+                // Simulate the Remember Me logic from AuthContext
+                const rememberMe = localStorage.getItem('remember_me') === 'true';
+                
+                if (rememberMe) {
+                    // Use localStorage for persistent storage
+                    const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+                    const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+                    
+                    if (token && userData) {
+                        localStorage.setItem('auth_token', token);
+                        localStorage.setItem('user', userData);
+                        localStorage.setItem('remember_me', 'true');
+                        // Clear sessionStorage to avoid conflicts
+                        sessionStorage.removeItem('auth_token');
+                        sessionStorage.removeItem('user');
+                        results.innerHTML = '<p style="color: green;">✓ Remember Me logic successful - using localStorage</p>';
+                    } else {
+                        results.innerHTML = '<p style="color: orange;">⚠ No token/user data found for Remember Me</p>';
+                    }
+                } else {
+                    // Use sessionStorage for session-only storage
+                    const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                    const userData = sessionStorage.getItem('user') || localStorage.getItem('user');
+                    
+                    if (token && userData) {
+                        sessionStorage.setItem('auth_token', token);
+                        sessionStorage.setItem('user', userData);
+                        // Clear localStorage to avoid conflicts
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('remember_me');
+                        results.innerHTML = '<p style="color: green;">✓ Session-only logic successful - using sessionStorage</p>';
+                    } else {
+                        results.innerHTML = '<p style="color: orange;">⚠ No token/user data found for session-only</p>';
+                    }
+                }
+                
+                updateStorageInfo();
+            } catch (error) {
+                results.innerHTML = '<p style="color: red;">✗ Remember Me logic test failed: ' + error.message + '</p>';
+            }
+        }
+        
+        function clearAllStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            results.innerHTML = '<p style="color: blue;">✓ All storage cleared</p>';
+            updateStorageInfo();
+        }
+        
+        // Initialize display
+        updateStorageInfo();
+    </script>
+</body>
+</html>
+
