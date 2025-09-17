@@ -1,0 +1,28 @@
+[Unit]
+Description=Preview Watch Laravel Queue Worker
+After=network.target mysql.service redis.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/developerhiteshsaini/preview.watch/backend
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --backoff=5 --max-time=3600
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+StandardOutput=append:/var/log/preview-watch-queue.log
+StandardError=append:/var/log/preview-watch-queue.log
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+Environment=QUEUE_CONNECTION=database
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/home/developerhiteshsaini/preview.watch/backend
+
+[Install]
+WantedBy=multi-user.target

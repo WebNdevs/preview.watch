@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Place this content into /etc/logrotate.d/preview-watch (remove shebang there)
+/home/developerhiteshsaini/preview.watch/backend/storage/logs/laravel.log {
+  weekly
+  rotate 8
+  compress
+  missingok
+  notifempty
+  copytruncate
+}
+
+/var/log/nginx/preview-watch-backend.access.log /var/log/nginx/preview-watch-backend.error.log {
+  weekly
+  rotate 8
+  compress
+  missingok
+  notifempty
+  sharedscripts
+  postrotate
+    [ -f /run/nginx.pid ] && kill -USR1 $(cat /run/nginx.pid)
+  endscript
+}
+
+/var/log/preview-watch-frontend.log /var/log/preview-watch-queue.log /var/log/preview-watch-scheduler.log {
+  weekly
+  rotate 8
+  compress
+  delaycompress
+  missingok
+  notifempty
+  copytruncate
+  create 640 www-data www-data
+}

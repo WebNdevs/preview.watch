@@ -1,0 +1,44 @@
+[Unit]
+Description=Preview Watch Frontend (Next.js)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/developerhiteshsaini/preview.watch/frontend
+# Auto install & build only if needed (hash check to avoid unnecessary rebuilds)
+ExecStartPre=/usr/bin/env bash -c 'if [ ! -f node_modules/.install-fingerprint ] || [ package-lock.json -nt node_modules/.install-fingerprint ]; then npm ci && date > node_modules/.install-fingerprint; fi'
+ExecStartPre=/usr/bin/env bash -c '[ -d .next ] || npm run build'
+ExecStartPre=/usr/bin/env bash -c 'if [ -d .next ] && [ package.json -nt .next ]; then npm run build; fi'
+
+# Prefer standalone build for minimal runtime footprint
+ExecStart=/usr/bin/env bash -c '
+  export PORT=3000; export NODE_ENV=production; \
+  if [ -d .next/standalone ]; then \
+    exec /usr/bin/node .next/standalone/server.js --port 3000; \
+  else \
+    exec /usr/bin/npm run start -- --port 3000; \
+  fi'
+Restart=always
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=10
+WatchdogSec=45
+Environment=PORT=3000
+Environment=NODE_ENV=production
+EnvironmentFile=-/etc/sysconfig/preview-watch-frontend
+LimitNOFILE=65535
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/home/developerhiteshsaini/preview.watch/frontend
+WorkingDirectory=/home/developerhiteshsaini/preview.watch/frontend
+StandardOutput=append:/var/log/preview-watch-frontend.log
+StandardError=append:/var/log/preview-watch-frontend.log
+KillSignal=SIGINT
+TimeoutStopSec=30
+SuccessExitStatus=0 130 143
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Preview Watch uptime probe every minute
+
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=60s
+AccuracySec=30s
+Unit=preview-watch-uptime.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

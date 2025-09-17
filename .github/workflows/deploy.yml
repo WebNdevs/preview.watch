@@ -1,0 +1,58 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (prod or staging)'
+        required: true
+        default: 'prod'
+      artifact_sha:
+        description: 'Git commit SHA to deploy (default: latest on main)'
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Select SHA
+        id: sha
+        run: |
+          if [ -n "${{ github.event.inputs.artifact_sha }}" ]; then echo "sha=${{ github.event.inputs.artifact_sha }}" >> $GITHUB_OUTPUT; else echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT; fi
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: preview-watch-build-${{ steps.sha.outputs.sha }}
+          path: build_artifacts
+
+      - name: Prepare deployment package
+        run: |
+          ls -1 build_artifacts
+          echo "Artifacts ready."
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          script: |
+            set -euo pipefail
+            APP_DIR=${{ secrets.DEPLOY_APP_DIR }}
+            mkdir -p $APP_DIR/releases
+            # Copy artifacts (expect two tarballs + manifest)
+            # Use scp fallback if needed; here we write remote via base64
+            for f in build_artifacts/*.tar.gz; do
+              echo "Extracting $f";
+              tar -xzf "$f" -C $APP_DIR/frontend 2>/dev/null || true;
+              tar -xzf "$f" -C $APP_DIR/backend 2>/dev/null || true;
+            done
+            cd $APP_DIR/backend
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force || true
+            php artisan optimize || true
+            sudo systemctl restart preview-watch-frontend || true
+            sudo systemctl restart preview-watch-backend-queue.service || true
+            sudo systemctl restart preview-watch-backend-scheduler.service || true
+            echo "Deployment done"

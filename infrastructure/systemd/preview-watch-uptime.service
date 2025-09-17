@@ -1,0 +1,9 @@
+[Unit]
+Description=Preview Watch Uptime Probe
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/developerhiteshsaini/preview.watch/infrastructure/monitor/uptime_check.sh
+User=root
+Group=root

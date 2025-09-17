@@ -1,0 +1,1 @@
+{"message":"Login successful","user":{"id":1,"name":"System Administrator","username":"admin","email":"admin@example.com","email_verified_at":"2025-08-31T23:42:00.000000Z","role":"admin","is_active":true,"created_at":"2025-08-31T23:42:00.000000Z","updated_at":"2025-08-31T23:42:00.000000Z"},"token":"12|RhU3WGN0OTkvJsRw9rMBHsW0ne6av72gBHxwKdbt58df1e2e"}

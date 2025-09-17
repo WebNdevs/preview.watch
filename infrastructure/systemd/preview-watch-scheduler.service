@@ -1,0 +1,16 @@
+[Unit]
+Description=Preview Watch Laravel Scheduler Runner
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=30
+WorkingDirectory=/home/developerhiteshsaini/preview.watch/backend
+ExecStart=/usr/bin/php artisan schedule:work
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

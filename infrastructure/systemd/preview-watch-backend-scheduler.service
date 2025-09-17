@@ -1,0 +1,26 @@
+[Unit]
+Description=Preview Watch Laravel Scheduler (cron replacement)
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/developerhiteshsaini/preview.watch/backend
+ExecStart=/usr/bin/php artisan schedule:work
+Restart=always
+RestartSec=10
+User=www-data
+Group=www-data
+StandardOutput=append:/var/log/preview-watch-scheduler.log
+StandardError=append:/var/log/preview-watch-scheduler.log
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/home/developerhiteshsaini/preview.watch/backend
+
+[Install]
+WantedBy=multi-user.target
